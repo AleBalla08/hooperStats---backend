@@ -24,8 +24,15 @@ class ProfileModel(models.Model):
         ]
     )
 
+class Session(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    name = models.CharField(max_length=20, null=False, blank=False, default='Treino')
+
+    def __str__(self):
+        return f"{self.name}"
+
 class Exercise(models.Model):
-    session_id = models.CharField(max_length=100, null=False, blank=False, default=0)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='exercises', default=None)
     name = models.CharField(max_length=50, blank=False, null=False, default='exercise')
     reps = models.IntegerField( validators=[MinValueValidator(1), MaxValueValidator(999)], null=False, blank=False, default=10)
     makes = models.IntegerField(validators=[MinValueValidator(0)], default=0)
@@ -36,20 +43,20 @@ class Exercise(models.Model):
         null=True,
         blank=True
     )
-    checked = models.CharField(max_length=1, null=False, blank=False, default=0)
+    checked = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.reps:
+            self.accuracy = (self.makes / self.reps) * 100
+        super().save(*args, **kwargs)
+
+
 
     def __str__(self):
         return f"{self.name} ({self.makes}/{self.reps}) - {self.accuracy or 0}%"
-
-class Session(models.Model):
-    name = models.CharField(max_length=20, null=False, blank=False, default='Treino')
-    exercises = models.ManyToManyField(Exercise)
-
-    def __str__(self):
-        return f"{self.name}"
     
 class DoneSession(models.Model):
-    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING)
+    session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True)
     duration = models.DurationField()
     date_finished = models.DateField(null=True, blank=True)
 
@@ -57,8 +64,10 @@ class DoneSession(models.Model):
         return f"sessao finalizada: {self.session.name}"
 
 class Tasks(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     name = models.CharField(max_length=20, blank=False, null=False, default='Tarefa')
-    checked = models.CharField(max_length=1, null=False, blank=False, default=0)
+    checked = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"Tarefa: {self.name}"
