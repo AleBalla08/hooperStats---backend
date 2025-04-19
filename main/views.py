@@ -90,8 +90,24 @@ class EditSessionView(APIView):
             session.name = name
             session.save()
             return Response({'message':'Edição realizada.'}, status=status.HTTP_200_OK)
+            
         except Exception as e:
             return Response({'message':e},status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request):
+        try:
+            id = request.data.get('id')
+            if not id:
+                return Response({'message':'ID obrigatorio'}, status=400)
+            session = Session.objects.filter(id=id).first()
+            session.delete()
+            return Response({'message':'Removido com sucesso'}, status=200)
+        except Exception as e:
+            return Response({'message':e}, status=400)
+
+    
+
+    
 
         
 
