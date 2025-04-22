@@ -80,9 +80,8 @@ class ListSessionsView(APIView):
 class EditSessionView(APIView):
     permission_classes = [IsAuthenticated]
     
-    def put(self, request):
+    def put(self, request, id):
         try:
-            id = request.data.get('id')
             name = request.data.get('name')
             if not name or not id:
                 return Response({'message':'Parâmetros incorretos.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -92,6 +91,20 @@ class EditSessionView(APIView):
             return Response({'message':'Edição realizada.'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message':e},status=status.HTTP_400_BAD_REQUEST)
+    
+class RemoveSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        try:
+            if not id:
+                return Response({'message':'ID is required.'}, status=400)
+            session = Session.objects.filter(id=id).first()
+            session.delete()
+            return Response({'message':'Sucesso ao deletar sessão'}, status=200)
+        except Exception as e:
+            return Response({'message':e}, status=400)
+
 
         
 
@@ -127,9 +140,8 @@ class ListExercisesView(APIView):
 class EditExerciseView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def patch(self, request): #finaliza o exer
+    def patch(self, request, id): #finaliza o exer
         try:
-            id = request.data.get('id')
             makes = int(request.data.get('makes'))
             
             if not id or makes is None:
@@ -145,9 +157,8 @@ class EditExerciseView(APIView):
         except Exception as e:
             return Response({'message':f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
     
-    def put(self, request):
+    def put(self, request, id):
         try:
-            id = request.data.get('id')
             name = request.data.get('name')
             reps = request.data.get('reps', 0)
 
@@ -181,7 +192,7 @@ class EditExerciseView(APIView):
 class CreateTask(APIView):
     permission_classes = [IsAuthenticated]
 
-    def put(self, request):
+    def post(self, request):
         try:
             user = request.user
             name = request.data.get('name')
@@ -197,27 +208,22 @@ class CreateTask(APIView):
         except Exception as e:
             return Response({'message':e}, status=status.HTTP_400_BAD_REQUEST)
 
-class EditaTaskView(APIView):
+class EditTaskView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def patch(self, request):
+    def patch(self, request, id):
+        checked = request.data.get('checked', 0)
         try:
-            id = request.data.get('id')
-            checked = request.data.get('checked', 0)
-
-            if not id:
-                return Response({'message': 'O ID é obrigatório'}, status=status.HTTP_400_BAD_REQUEST)
-            
             task = Tasks.objects.filter(id=id).first()
             if not task:
                 return Response({'message': 'Tarefa não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
-            
+
             task.checked = checked
             task.save()
             return Response({'message': 'Salvo com sucesso'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request):
         try:
             id = request.data.get('id')
@@ -231,8 +237,7 @@ class EditaTaskView(APIView):
             
 
     
-    def put(self, request):
-        id = request.data.get('id')
+    def put(self, request, id):
 
         if not id:
                 return Response({'message':'o ID é obrigatório'}, status=status.HTTP_400_BAD_REQUEST)
@@ -258,6 +263,18 @@ class ListTasksView(APIView):
         except Exception as e:
             return Response({'message':e}, status=status.HTTP_200_OK)
 
+
+class ClearCheckedTasksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        try:
+            Tasks.objects.filter(checked=True).delete()
+            return Response({'message': 'Removidas com sucesso'}, status=200)
+        except Exception as e:
+            return Response({'message': str(e)}, status=400)
+
+            
         
 
     
