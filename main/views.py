@@ -89,6 +89,7 @@ class EditSessionView(APIView):
             session.name = name
             session.save()
             return Response({'message':'Edição realizada.'}, status=status.HTTP_200_OK)
+            
         except Exception as e:
             return Response({'message':e},status=status.HTTP_400_BAD_REQUEST)
     
