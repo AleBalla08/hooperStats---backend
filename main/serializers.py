@@ -22,20 +22,20 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User,
-        fields = ['id', 'username', 'email']
+        fields = '__all__'
 
 class SessionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Session,
-        fields = ['name']
+        model = Session
+        fields = '__all__'
     
 class ExerciseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exercise,
-        fields = ['name', 'reps', 'makes', 'accuracy', 'checked']
+        fields = '__all__'
 
 class TasksSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tasks,
-        fields = ['name', 'checked']
+        fields = '__all__'

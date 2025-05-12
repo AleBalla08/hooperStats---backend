@@ -8,7 +8,24 @@ from .models import *
 from .serializers import *
 from django.contrib.auth import authenticate, login, logout
 from rest_framework_simplejwt.tokens import RefreshToken
+from datetime import timedelta
 #Views de Autenticação do usuário:
+
+class RefreshTokenView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return Response({"detail": "Refresh token not provided."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+            return Response({'access_token': access_token})
+        except Exception:
+            return Response({"detail": "Invalid refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
@@ -40,9 +57,10 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        logout(request)
-        return Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)
-        
+        response = Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)
+        response.delete_cookie('refresh_token')
+        return response
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -59,12 +77,23 @@ class LoginView(APIView):
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
 
-            return Response({
-                'access_token': access_token,
-                'refresh_token': str(refresh),
+            response = Response({
+                'access_token': access_token
             })
+
+            response.set_cookie(
+                key='refresh_token',
+                value=str(refresh),
+                httponly=True,
+                secure=True,
+                samesite='Lax',
+                max_age=7 * 24 * 60 * 60  # 7 dias
+            )
+
+            return response
         else:
             return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 
@@ -90,6 +119,7 @@ class ListSessionsView(APIView):
     def get(self, request):
         try: 
             sessions = Session.objects.filter(user=request.user).all()
+            print(sessions)
             serializer = SessionSerializer(sessions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
