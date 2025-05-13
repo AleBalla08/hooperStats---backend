@@ -10,7 +10,11 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 #Views de Autenticação do usuário:
+class ProtectedView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        return Response({'message':f'Bem Vindo, {request.user.username}! Esta é um rota protegida.'})
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
 
