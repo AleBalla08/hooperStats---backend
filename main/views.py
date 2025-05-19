@@ -80,6 +80,7 @@ class LoginView(APIView):
         if user is not None:
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
 
             response = Response({
                 'access_token': access_token
@@ -87,11 +88,12 @@ class LoginView(APIView):
 
             response.set_cookie(
                 key='refresh_token',
-                value=str(refresh),
+                value=str(refresh_token),
                 httponly=True,
-                secure=True,
+                secure=False,  # True em produção com HTTPS
                 samesite='Lax',
-                max_age=7 * 24 * 60 * 60  # 7 dias
+                path='/',
+                max_age=7 * 24 * 60 * 60,  # <- cookie válido por 7 dias
             )
 
             return response
