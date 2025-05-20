@@ -159,6 +159,25 @@ class RemoveSessionView(APIView):
             return Response({'message':'Sucesso ao deletar sessão'}, status=200)
         except Exception as e:
             return Response({'message':e}, status=400)
+        
+
+class SingleSessionExerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        id_session = request.query_params.get('id_session')
+        if not id_session:
+            return Response({'message':'o ID informado não é válido'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            session = Session.objects.filter(id=id_session).first()
+            if not session:
+                return Response({'message':'sessão não encontrada'}, status=status.HTTP_400_BAD_REQUEST)
+            exercises = Exercise.objects.filter(session=session).all()
+            serializer = ExerciseSerializer(exercises, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message':f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
         
@@ -240,6 +259,9 @@ class EditExerciseView(APIView):
             return Response({'message':'Exercício removido'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message":f"Erro: {e}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
 
 
 #tasks views
