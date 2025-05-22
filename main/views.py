@@ -160,8 +160,8 @@ class RemoveSessionView(APIView):
         except Exception as e:
             return Response({'message':e}, status=400)
         
-
-class SingleSessionExerView(APIView):
+#views sessão individual
+class SingleSessionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):

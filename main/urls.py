@@ -21,5 +21,5 @@ urlpatterns = [
     path('clear-checked-goals/', ClearCheckedTasksView.as_view(), name='clear-checked-goals'),
 
     #single session
-    path('get-session-exercises/', SingleSessionExerView.as_view(), name='get-session-exercises'),
+    path('session/', SingleSessionListView.as_view(), name='session'),
 ]
