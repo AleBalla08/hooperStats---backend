@@ -21,7 +21,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User,
+        model = User
         fields = '__all__'
 
 class SessionSerializer(serializers.ModelSerializer):
@@ -30,11 +30,11 @@ class SessionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 class ExerciseSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Exercise,
+        model = Exercise
         fields = '__all__'
 
 class TasksSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Tasks,
+        model = Tasks
         fields = '__all__'

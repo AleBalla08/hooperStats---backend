@@ -173,6 +173,9 @@ class SingleSessionListView(APIView):
             if not session:
                 return Response({'message':'sessão não encontrada'}, status=status.HTTP_400_BAD_REQUEST)
             exercises = Exercise.objects.filter(session=session).all()
+            print("EXERCISES:", exercises)
+            for ex in exercises:
+                print(type(ex), ex)
             serializer = ExerciseSerializer(exercises, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -191,7 +194,6 @@ class CreateExerciseView(APIView):
             reps = int(request.data.get('reps'))
             session_id = request.data.get('session_id')
             session = Session.objects.filter(id=session_id).first()
-            
             Exercise.objects.create(name=name, reps=reps, makes=0, accuracy=0, checked=0, session=session)
             return Response({'message':'Exercício criado com sucesso'}, status=status.HTTP_201_CREATED  )
         except Exception as e:
