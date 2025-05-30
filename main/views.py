@@ -165,19 +165,25 @@ class SingleSessionListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        id_session = request.query_params.get('id_session')
-        if not id_session:
-            return Response({'message':'o ID informado não é válido'}, status=status.HTTP_400_BAD_REQUEST)
         try:
+            id_session = request.query_params.get('id_session')
+            if not id_session:
+                return Response({'message': 'id_session não fornecido.'}, status=status.HTTP_400_BAD_REQUEST)
+
             session = Session.objects.filter(id=id_session).first()
             if not session:
-                return Response({'message':'sessão não encontrada'}, status=status.HTTP_400_BAD_REQUEST)
-            exercises = Exercise.objects.filter(session=session).all()
-            print("EXERCISES:", exercises)
-            for ex in exercises:
-                print(type(ex), ex)
-            serializer = ExerciseSerializer(exercises, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response({'message': 'Sessão não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+            
+            exercises = Exercise.objects.filter(session_id=id_session).all()
+            exer_serializer = ExerciseSerializer(exercises, many=True)
+            
+            session_serializer = SessionSerializer(session)
+            context = {
+                "exercises" : exer_serializer.data,
+                "session" : session_serializer.data
+            }
+            return Response(context, status=status.HTTP_200_OK)
+        
         except Exception as e:
             return Response({'message':f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -199,18 +205,6 @@ class CreateExerciseView(APIView):
         except Exception as e:
             return Response({'message':f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
         
-    
-class ListExercisesView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        try:
-            id_session = request.query_params.get('id_session')
-            exercises = Exercise.objects.filter(session_id=id_session).all()
-            serializer = ExerciseSerializer(exercises, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'message':f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
         
     
 class EditExerciseView(APIView):
