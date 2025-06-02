@@ -200,8 +200,9 @@ class CreateExerciseView(APIView):
             reps = int(request.data.get('reps'))
             session_id = request.data.get('session_id')
             session = Session.objects.filter(id=session_id).first()
-            Exercise.objects.create(name=name, reps=reps, makes=0, accuracy=0, checked=0, session=session)
-            return Response({'message':'Exercício criado com sucesso'}, status=status.HTTP_201_CREATED  )
+            exercise = Exercise.objects.create(name=name, reps=reps, makes=0, accuracy=0, checked=0, session=session)
+            serializers = ExerciseSerializer(exercise)
+            return Response({'message':'Exercício criado com sucesso', "data": serializers.data}, status=status.HTTP_201_CREATED  )
         except Exception as e:
             return Response({'message':f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -246,9 +247,8 @@ class EditExerciseView(APIView):
         except Exception as e:
             return Response({'message':e}, status=status.HTTP_400_BAD_REQUEST)
         
-    def delete(self, request):
+    def delete(self, request, id):
         try: 
-            id = request.data.get('id')
             exer = Exercise.objects.filter(id=id).first()
             if exer:
                 exer.delete()
