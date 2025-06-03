@@ -38,3 +38,10 @@ class TasksSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tasks
         fields = '__all__'
+
+
+class DoneSessionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DoneSession
+        fields = '__all__'

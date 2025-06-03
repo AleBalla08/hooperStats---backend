@@ -346,3 +346,22 @@ class ClearCheckedTasksView(APIView):
             return Response({'message': 'Removidas com sucesso'}, status=200)
         except Exception as e:
             return Response({'message': str(e)}, status=400)
+        
+
+#done sessions
+
+class GetDoneSessionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:    
+            id_session = request.query_params.get('id_session')
+            
+            if id_session:
+                sessions = DoneSession.objects.filter(session=id_session).all()
+                serializers = DoneSessionSerializer(sessions, many=True)
+                return Response(serializers.data, status=status.HTTP_200_OK)
+            else: 
+                return Response({'message': 'ID da sessão não encontrado.'}, status=401)
+        except Exception as e:
+            return Response({'message': f'Error: {e}'}, status=400)
