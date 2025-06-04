@@ -224,7 +224,9 @@ class EditExerciseView(APIView):
             exer.accuracy = accuracy
             exer.checked = 1
             exer.save()
-            return Response({'message':'Exercício concluído'}, status=status.HTTP_200_OK)
+
+            serializers = ExerciseSerializer(exer)
+            return Response({'message':'Exercício concluído', 'exer': serializers.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message':f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
     
