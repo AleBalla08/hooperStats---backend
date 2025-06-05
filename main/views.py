@@ -8,7 +8,7 @@ from .models import *
 from .serializers import *
 from django.contrib.auth import authenticate, login, logout
 from rest_framework_simplejwt.tokens import RefreshToken
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 #Views de Autenticação do usuário:
 class ProtectedView(APIView):
     permission_classes = [IsAuthenticated]
@@ -187,6 +187,41 @@ class SingleSessionListView(APIView):
         except Exception as e:
             return Response({'message':f'Erro: {e}'}, status=status.HTTP_400_BAD_REQUEST)
 
+class EndSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, id):
+        try:
+            duration = request.data.get('duration')
+
+            session = Session.objects.filter(id=id).first()
+
+            DoneSession.objects.create(
+                session=session,
+                duration=duration,
+                date_finished=datetime.now()
+            )
+
+            if not session:
+                return Response({'message': 'Erro ao encontrar sessão'}, status=status.HTTP_404_NOT_FOUND)
+            exercises = Exercise.objects.filter(session=session.id).all()
+
+            for e in exercises:
+                e.makes = 0
+                e.accuracy = 0.00
+                e.checked = False
+                e.save()
+            
+            session.save()
+            return Response({'message':'Sessão finalizada com sucesso'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message':'Erro ao finalizar sessão: {}'.format(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+            
+
+
+
 
 
         
@@ -356,14 +391,17 @@ class GetDoneSessionsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        try:    
-            id_session = request.query_params.get('id_session')
-            
-            if id_session:
-                sessions = DoneSession.objects.filter(session=id_session).all()
-                serializers = DoneSessionSerializer(sessions, many=True)
-                return Response(serializers.data, status=status.HTTP_200_OK)
-            else: 
-                return Response({'message': 'ID da sessão não encontrado.'}, status=401)
+        try:
+            sessions = DoneSession.objects.all()
+            data = []
+
+            for done in sessions:
+                data.append({
+                    'name': done.session.name if done.session else None,
+                    'duration': done.duration,
+                    'date_finished': done.date_finished
+                })
+
+            return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': f'Error: {e}'}, status=400)

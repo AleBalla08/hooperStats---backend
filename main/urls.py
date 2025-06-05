@@ -20,6 +20,7 @@ urlpatterns = [
     #single session
     path('session/', SingleSessionListView.as_view(), name='session'),
     path('create-exercise/', CreateExerciseView.as_view(), name='create-exercise'),
-    path('edit-exercise/<int:id>', EditExerciseView.as_view(), name='edit-exercise'),
+    path('edit-exercise/<str:id>', EditExerciseView.as_view(), name='edit-exercise'),
+    path('end-session/<str:id>', EndSessionView.as_view(), name='end-session'),
     path('get-done-sessions/', GetDoneSessionsView.as_view(), name='get-done-sessions'),
 ]

@@ -57,7 +57,7 @@ class Exercise(models.Model):
     
 class DoneSession(models.Model):
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True)
-    duration = models.DurationField()
+    duration = models.IntegerField()
     date_finished = models.DateField(null=True, blank=True)
 
     def __str__(self):
