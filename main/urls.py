@@ -23,4 +23,5 @@ urlpatterns = [
     path('edit-exercise/<str:id>', EditExerciseView.as_view(), name='edit-exercise'),
     path('end-session/<str:id>', EndSessionView.as_view(), name='end-session'),
     path('get-done-sessions/', GetDoneSessionsView.as_view(), name='get-done-sessions'),
+    path('clear-done-sessions/', ClearDoneSessionsView.as_view(), name='clear-done-sessions')
 ]

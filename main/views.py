@@ -216,15 +216,6 @@ class EndSessionView(APIView):
             return Response({'message':'Sessão finalizada com sucesso'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message':'Erro ao finalizar sessão: {}'.format(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
-            
-            
-
-
-
-
-
-        
 
 class CreateExerciseView(APIView):
     permission_classes = [IsAuthenticated]
@@ -397,6 +388,7 @@ class GetDoneSessionsView(APIView):
 
             for done in sessions:
                 data.append({
+                    'id': done.session.id,
                     'name': done.session.name if done.session else None,
                     'duration': done.duration,
                     'date_finished': done.date_finished
@@ -405,3 +397,22 @@ class GetDoneSessionsView(APIView):
             return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': f'Error: {e}'}, status=400)
+        
+class ClearDoneSessionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        try:
+            ids = request.data.get('ids', [])
+        except Exception:
+            return Response({'detail': 'Invalid request body.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not isinstance(ids, list):
+            return Response({'detail': 'IDs must be provided as a list.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        deleted_count = 0
+        if ids:
+            deleted_count, _ = Session.objects.filter(id__in=ids).delete()
+
+        return Response({'detail': f'{deleted_count} sessions deleted.'}, status=status.HTTP_200_OK)
+        
