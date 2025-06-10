@@ -57,7 +57,7 @@ class Exercise(models.Model):
         return f"{self.name} ({self.makes}/{self.reps}) - {self.accuracy or 0}%"
     
 class DoneSession(models.Model):
-    session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, null=True)
     duration = models.IntegerField()
     date_finished = models.DateField(null=True, blank=True)
 

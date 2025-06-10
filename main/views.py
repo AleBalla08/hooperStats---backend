@@ -223,7 +223,7 @@ class CreateExerciseView(APIView):
     def post(self, request):
         try: 
             name = request.data.get('name')
-            position = request.data.get('position')
+            position = request.data.get('position', 'midrange-r')
             reps = int(request.data.get('reps'))
             session_id = request.data.get('session_id')
             session = Session.objects.filter(id=session_id).first()
@@ -389,17 +389,40 @@ class GetDoneSessionsView(APIView):
             sessions = DoneSession.objects.all()
             data = []
 
+            if not sessions:
+                return Response({'message': 'Nenhuma sessão encontrada'}, status=200)
+
             for done in sessions:
-                data.append({
-                    'id': done.session.id,
-                    'name': done.session.name if done.session else None,
+                session_data = {
+                    'id': None,
+                    'name': None,
+                    'exercises': [],
                     'duration': done.duration,
                     'date_finished': done.date_finished
-                })
+                }
+
+                if done.session:
+                    session_data['id'] = done.session.id
+                    session_data['name'] = done.session.name
+                    exercises = done.session.exercises.all()
+
+                    session_data['exercises'] = [
+                        {
+                            'id': exercise.id,
+                            'name': exercise.name,
+                            'position': exercise.position,
+                            'reps': exercise.reps,
+                            'makes': exercise.makes,
+                            'accuracy': exercise.accuracy,
+                        } for exercise in exercises
+                    ]
+                
+                data.append(session_data)
 
             return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': f'Error: {e}'}, status=400)
+
         
 class ClearDoneSessionsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -415,7 +438,7 @@ class ClearDoneSessionsView(APIView):
 
         deleted_count = 0
         if ids:
-            deleted_count, _ = Session.objects.filter(id__in=ids).delete()
+            deleted_count, _ = DoneSession.objects.filter(session__id__in=ids).delete()
 
         return Response({'detail': f'{deleted_count} sessions deleted.'}, status=status.HTTP_200_OK)
         
