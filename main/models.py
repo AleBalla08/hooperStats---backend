@@ -34,6 +34,7 @@ class Session(models.Model):
 class Exercise(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='exercises', default=None)
     name = models.CharField(max_length=50, blank=False, null=False, default='exercise')
+    position = models.CharField(max_length=50, blank=False, null=False, default='midrange-r')
     reps = models.IntegerField( validators=[MinValueValidator(1), MaxValueValidator(999)], null=False, blank=False, default=10)
     makes = models.IntegerField(validators=[MinValueValidator(0)], default=0)
     accuracy = models.DecimalField(

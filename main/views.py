@@ -223,10 +223,11 @@ class CreateExerciseView(APIView):
     def post(self, request):
         try: 
             name = request.data.get('name')
+            position = request.data.get('position')
             reps = int(request.data.get('reps'))
             session_id = request.data.get('session_id')
             session = Session.objects.filter(id=session_id).first()
-            exercise = Exercise.objects.create(name=name, reps=reps, makes=0, accuracy=0, checked=0, session=session)
+            exercise = Exercise.objects.create(name=name, position=position, reps=reps, makes=0, accuracy=0, checked=0, session=session)
             serializers = ExerciseSerializer(exercise)
             return Response({'message':'Exercício criado com sucesso', "data": serializers.data}, status=status.HTTP_201_CREATED  )
         except Exception as e:
@@ -259,6 +260,7 @@ class EditExerciseView(APIView):
     def put(self, request, id):
         try:
             name = request.data.get('name')
+            position = request.data.get('position')
             reps = request.data.get('reps', 0)
 
             if not id or name == '':
@@ -266,6 +268,7 @@ class EditExerciseView(APIView):
             
             exer = Exercise.objects.filter(id=id).first()
             exer.name = name
+            exer.position = position
             exer.reps = reps
             exer.makes = 0
             exer.accuracy = 0
