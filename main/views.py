@@ -439,6 +439,8 @@ class ClearDoneSessionsView(APIView):
         deleted_count = 0
         if ids:
             deleted_count, _ = DoneSession.objects.filter(session__id__in=ids).delete()
+            
+
 
         return Response({'detail': f'{deleted_count} sessions deleted.'}, status=status.HTTP_200_OK)
         
