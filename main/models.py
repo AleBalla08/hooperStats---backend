@@ -63,6 +63,15 @@ class DoneSession(models.Model):
 
     def __str__(self):
         return f"sessao finalizada: {self.session.name}"
+    
+class DoneExercise(models.Model):
+    done_session = models.ForeignKey(DoneSession, on_delete=models.CASCADE, related_name='done_exercises')
+    name = models.CharField(max_length=100, null=True, blank=True)
+    position = models.CharField(max_length=100)
+    reps = models.IntegerField()
+    makes = models.IntegerField()
+    accuracy = models.FloatField()  
+
 
 class Tasks(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)

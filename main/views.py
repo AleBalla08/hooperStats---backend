@@ -193,20 +193,31 @@ class EndSessionView(APIView):
     def patch(self, request, id):
         try:
             duration = request.data.get('duration')
+            exercises = request.data.get('exercises')
 
             session = Session.objects.filter(id=id).first()
 
-            DoneSession.objects.create(
+            if not session:
+                return Response({'message': 'Erro ao encontrar sessão'}, status=status.HTTP_404_NOT_FOUND)
+
+            done_session = DoneSession.objects.create(
                 session=session,
                 duration=duration,
                 date_finished=datetime.now()
             )
 
-            if not session:
-                return Response({'message': 'Erro ao encontrar sessão'}, status=status.HTTP_404_NOT_FOUND)
             exercises = Exercise.objects.filter(session=session.id).all()
 
             for e in exercises:
+                DoneExercise.objects.create(
+                    done_session=done_session,
+                    position=e.position,
+                    reps=e.reps,
+                    makes=e.makes,
+                    accuracy=e.accuracy,
+                )
+
+
                 e.makes = 0
                 e.accuracy = 0.00
                 e.checked = False
@@ -389,33 +400,30 @@ class GetDoneSessionsView(APIView):
             sessions = DoneSession.objects.all()
             data = []
 
-            if not sessions:
+            if not sessions.exists():
                 return Response({'message': 'Nenhuma sessão encontrada'}, status=200)
 
             for done in sessions:
                 session_data = {
-                    'id': None,
-                    'name': None,
+                    'id': done.session.id if done.session else None,
+                    'name': done.session.name if done.session else None,
                     'exercises': [],
                     'duration': done.duration,
                     'date_finished': done.date_finished
                 }
 
-                if done.session:
-                    session_data['id'] = done.session.id
-                    session_data['name'] = done.session.name
-                    exercises = done.session.exercises.all()
+                exercises = done.done_exercises.all()
 
-                    session_data['exercises'] = [
-                        {
-                            'id': exercise.id,
-                            'name': exercise.name,
-                            'position': exercise.position,
-                            'reps': exercise.reps,
-                            'makes': exercise.makes,
-                            'accuracy': exercise.accuracy,
-                        } for exercise in exercises
-                    ]
+                session_data['exercises'] = [
+                    {
+                        'id': exercise.id,
+                        'name': exercise.name,
+                        'position': exercise.position,
+                        'reps': exercise.reps,
+                        'makes': exercise.makes,
+                        'accuracy': exercise.accuracy,
+                    } for exercise in exercises
+                ]
                 
                 data.append(session_data)
 
